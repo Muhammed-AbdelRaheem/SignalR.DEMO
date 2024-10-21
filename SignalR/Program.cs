@@ -1,3 +1,7 @@
+using Microsoft.EntityFrameworkCore;
+using SignalR.Contexts;
+using SignalR.Hubs;
+
 namespace SignalR
 {
 	public class Program
@@ -5,9 +9,24 @@ namespace SignalR
 		public static void Main(string[] args)
 		{
 			var builder = WebApplication.CreateBuilder(args);
+
+			builder.Services.AddDbContext<ChatDbContext>(options =>
+			{
+				options.UseSqlServer(builder.Configuration.GetConnectionString("ChatConnection"));
+			});
+
+			builder.Services.AddSignalR();
+
 			var app = builder.Build();
 
-			app.MapGet("/", () => "Hello World!");
+			app.UseStaticFiles();
+
+			app.UseRouting();
+
+			app.UseEndpoints(endpoints =>
+			{
+				endpoints.MapHub<ChatHub>("/chat");
+			});
 
 			app.Run();
 		}
